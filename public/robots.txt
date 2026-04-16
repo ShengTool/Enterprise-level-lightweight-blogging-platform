@@ -1,0 +1,14 @@
+# LiteBlog
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://yourdomain.com/sitemap.xml
+
+# Disallow admin pages
+Disallow: /api/admin/
+Disallow: /swagger-*
+
+# Disallow search
+Disallow: /search?q=*
