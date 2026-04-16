@@ -330,7 +330,11 @@ const changePage = (page: number) => {
 }
 
 const loadArticles = async () => {
-  await articleStore.getArticles(currentPage.value, pageSize.value, selectedTag.value, '')
+  try {
+    await articleStore.getArticles(currentPage.value, pageSize.value, selectedTag.value, '')
+  } catch (error) {
+    console.warn('Failed to load articles:', error)
+  }
 }
 
 // 监听路由查询参数
@@ -341,10 +345,14 @@ watch(() => route.query.search, (search) => {
 }, { immediate: true })
 
 onMounted(async () => {
-  await Promise.all([
-    loadArticles(),
-    tagStore.getTags()
-  ])
+  try {
+    await Promise.all([
+      loadArticles(),
+      tagStore.getTags().catch(e => console.warn('Failed to load tags:', e))
+    ])
+  } catch (error) {
+    console.warn('Failed to load initial data:', error)
+  }
 })
 </script>
 
