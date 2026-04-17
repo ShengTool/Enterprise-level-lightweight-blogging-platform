@@ -70,6 +70,13 @@
                 <line x1="9" y1="21" x2="9" y2="9"/>
               </svg>
             </router-link>
+            <button class="action-btn" title="退出登录" @click="userStore.logout()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+            </button>
           </template>
           <template v-else>
             <!-- Guest user -->
@@ -208,6 +215,9 @@ const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy5
   color: var(--color-text-secondary);
   text-decoration: none;
   transition: all var(--transition-fast);
+  border: none;
+  cursor: pointer;
+  padding: 0;
 }
 
 .action-btn:hover {
