@@ -22,16 +22,12 @@ export const useTagStore = defineStore('tag', {
       this.error = null
       try {
         const response = await axios.get('/tags')
-        this.tags = response.data || []
+        this.tags = Array.isArray(response.data) ? response.data : []
         return response.data || []
       } catch (error: any) {
         this.error = error.response?.data?.message || 'Failed to get tags'
-        // 网络错误时返回空数据，避免前端崩溃
-        if (!error.response) {
-          this.tags = []
-          return []
-        }
-        throw error
+        this.tags = []
+        return []
       } finally {
         this.loading = false
       }

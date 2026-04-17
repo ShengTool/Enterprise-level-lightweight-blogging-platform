@@ -86,23 +86,24 @@
           >
             全部
           </button>
-          <button 
-            v-if="tagStore.tags"
-            v-for="tag in tagStore.tags"
-            :key="tag.id"
-            class="tag-btn"
-            :class="{ active: selectedTag === tag.name }"
-            :style="selectedTag === tag.name ? {
-              backgroundColor: tag.color + '20',
-              color: tag.color,
-              borderColor: tag.color
-            } : {}"
-            @click="selectTag(tag.name)"
-          >
-            <span class="tag-indicator" :style="{ backgroundColor: tag.color }"></span>
-            {{ tag.name }}
-            <span class="tag-count">{{ tag.count }}</span>
-          </button>
+          <template v-if="Array.isArray(tagStore.tags) && tagStore.tags.length > 0">
+            <button 
+              v-for="tag in tagStore.tags"
+              :key="tag.id"
+              class="tag-btn"
+              :class="{ active: selectedTag === tag.name }"
+              :style="selectedTag === tag.name ? {
+                backgroundColor: tag.color + '20',
+                color: tag.color,
+                borderColor: tag.color
+              } : {}"
+              @click="selectTag(tag.name)"
+            >
+              <span class="tag-indicator" :style="{ backgroundColor: tag.color }"></span>
+              {{ tag.name }}
+              <span class="tag-count">{{ tag.count }}</span>
+            </button>
+          </template>
         </div>
       </div>
     </section>
@@ -127,7 +128,7 @@
         </div>
 
         <!-- 文章列表 -->
-        <div v-else-if="articleStore.articles && articleStore.articles.length > 0" class="articles-grid">
+        <div v-else-if="Array.isArray(articleStore.articles) && articleStore.articles.length > 0" class="articles-grid">
           <article
             v-for="(article, index) in articleStore.articles"
             :key="article.id"
@@ -217,7 +218,7 @@
         </div>
 
         <!-- 分页 -->
-        <div v-if="articleStore.total > pageSize" class="pagination-wrapper">
+        <div v-if="(articleStore.total || 0) > pageSize" class="pagination-wrapper">
           <div class="pagination">
             <button
               class="pagination-btn"
@@ -231,7 +232,7 @@
 
             <div class="pagination-pages">
               <button
-                v-for="page in displayedPages"
+                v-for="page in (displayedPages || [])"
                 :key="page"
                 class="pagination-page"
                 :class="{ active: page === currentPage, ellipsis: page === '...' }"
@@ -340,7 +341,7 @@ const loadArticles = async () => {
 // 监听路由查询参数
 watch(() => route.query.search, (search) => {
   if (search) {
-    articleStore.getArticles(1, pageSize.value, '', search as string)
+    loadArticles()
   }
 }, { immediate: true })
 

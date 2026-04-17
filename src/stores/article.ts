@@ -40,18 +40,15 @@ export const useArticleStore = defineStore('article', {
       try {
         const params = { page, limit, tag, search }
         const response = await axios.get('/articles', { params })
-        this.articles = response.data?.articles || []
+        const articles = response.data?.articles
+        this.articles = Array.isArray(articles) ? articles : []
         this.total = response.data?.total || 0
         return response.data || { articles: [], total: 0 }
       } catch (error: any) {
         this.error = error.response?.data?.message || 'Failed to get articles'
-        // 网络错误时返回空数据，避免前端崩溃
-        if (!error.response) {
-          this.articles = []
-          this.total = 0
-          return { data: [], total: 0 }
-        }
-        throw error
+        this.articles = []
+        this.total = 0
+        return { articles: [], total: 0 }
       } finally {
         this.loading = false
       }
