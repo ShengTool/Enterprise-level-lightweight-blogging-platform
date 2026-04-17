@@ -40,7 +40,7 @@
           </router-link>
         </div>
         
-        <div class="nav-section">
+        <div class="nav-section" v-if="isAdmin">
           <span v-if="!sidebarCollapsed" class="nav-label">系统管理</span>
           <router-link
             v-for="item in systemMenu"
@@ -150,6 +150,8 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const sidebarCollapsed = ref(false)
+
+const isAdmin = computed(() => userStore.user?.isAdmin === true)
 
 const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iMjAiIGZpbGw9IiNFOEU4RTgiLz48Y2lyY2xlIGN4PSIyMCIgY3k9IjE2IiByPSI4IiBmaWxsPSIjQThBOEE4Ii8+PHBhdGggZD0iTTYgMzVjMC04LjI4NCA2LjcxNi0xNSAxNS0xNXMxNSA2LjcxNiAxNSAxNSIgZmlsbD0iI0E4QThBOCIvPjwvc3ZnPg=='
 

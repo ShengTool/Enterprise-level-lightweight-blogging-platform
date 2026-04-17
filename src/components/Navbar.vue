@@ -47,7 +47,12 @@
               />
               <span class="user-name">{{ userStore.user.username }}</span>
             </router-link>
-            <router-link to="/admin" class="action-btn" title="管理后台">
+            <router-link 
+              v-if="userStore.user.isAdmin" 
+              to="/admin" 
+              class="action-btn" 
+              title="管理后台"
+            >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                 <line x1="3" y1="9" x2="21" y2="9"/>

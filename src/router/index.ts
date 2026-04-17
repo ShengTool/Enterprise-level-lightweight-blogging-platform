@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
+import { useUserStore } from '../stores/user'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -92,6 +93,23 @@ const router = createRouter({
       component: () => import('../views/NotFound.vue')
     }
   ]
+})
+
+// 路由守卫：非管理员不能访问 /admin/** 页面
+router.beforeEach(async (to) => {
+  if (!to.path.startsWith('/admin')) return true
+
+  const userStore = useUserStore()
+
+  // 如果还没加载过用户信息，先拉取一次
+  if (userStore.token && !userStore.user) {
+    await userStore.getProfile()
+  }
+
+  if (!userStore.user?.isAdmin) {
+    return '/'
+  }
+  return true
 })
 
 export default router
