@@ -548,23 +548,24 @@
 }
 
 .cta-card .btn-primary {
-  background: white;
-  color: var(--color-primary);
-  border-color: white;
+  background: white !important;
+  color: var(--color-primary) !important;
+  border-color: white !important;
 }
 
 .cta-card .btn-primary:hover {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.9) !important;
 }
 
 .cta-card .btn-secondary {
-  background: transparent;
-  color: white;
-  border-color: rgba(255, 255, 255, 0.5);
+  background: transparent !important;
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
 }
 
 .cta-card .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: white;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: white !important;
+}
 }
 </style>
