@@ -42,11 +42,12 @@ public class SecurityConfig {
                 // 公开访问的API
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/api/articles", "/api/articles/").permitAll()  // GET 列表
-                .requestMatchers("/api/articles/popular").permitAll()  // GET 热门
-                .requestMatchers("/api/articles/{id}").permitAll()  // GET 详情
-                .requestMatchers("/api/tags/**").permitAll()
-                .requestMatchers("/api/comments/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/articles/**").permitAll()  // GET 公开
+                .requestMatchers(HttpMethod.GET, "/api/tags/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
+                .requestMatchers("/api/articles").permitAll()  // POST 列表用
+                .requestMatchers("/api/articles/").permitAll()
+                .requestMatchers("/api/articles/popular").permitAll()
                 
                 // 文章写操作需要认证
                 .requestMatchers(HttpMethod.POST, "/api/articles/**").authenticated()
