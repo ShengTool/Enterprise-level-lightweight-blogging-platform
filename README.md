@@ -37,8 +37,6 @@
 | Redis | 缓存 & 限流 |
 
 ## 📸 项目截图
-
-> 可在此处添加项目截图
 > <img width="1854" height="965" alt="image" src="https://github.com/user-attachments/assets/9b56d24c-3ace-48eb-b0fd-e2ad84056b4a" />
   <img width="1861" height="981" alt="image" src="https://github.com/user-attachments/assets/2bc4f7bb-2421-4456-b8d0-0369489f8d6c" />
 
