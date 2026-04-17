@@ -272,7 +272,6 @@ const route = useRoute()
 const articleStore = useArticleStore()
 const commentStore = useCommentStore()
 const userStore = useUserStore()
-const userStore = useUserStore()
 
 const commentText = ref('')
 const readingProgress = ref(0)
