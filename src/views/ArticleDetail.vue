@@ -162,7 +162,7 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
-            评论 ({{ (articleStore.currentArticle as ArticleWithStats)?.comment_count || 0 }})
+            评论 ({{ (articleStore.currentArticle as ArticleWithStats)?.commentCount || 0 }})
           </h2>
           
           <!-- 评论输入 -->
@@ -178,7 +178,7 @@
               ></textarea>
               <div class="comment-form-actions">
                 <span class="comment-hint">支持 Markdown 语法</span>
-                <button class="btn btn-primary" :disabled="!commentText.trim()">
+                <button class="btn btn-primary" :disabled="!commentText.trim() || commentStore.loading" @click="handleSubmitComment">
                   发布评论
                 </button>
               </div>
@@ -191,31 +191,31 @@
           </div>
           
           <!-- 评论列表 -->
-          <div class="comments-list">
-            <!-- 示例评论 -->
-            <div class="comment-item">
+          <div class="comments-list" v-if="commentStore.comments.length > 0">
+            <div v-for="comment in commentStore.comments" :key="comment.id" class="comment-item">
               <div class="comment-avatar">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=1" alt="评论者头像" loading="lazy" />
+                <img :src="comment.user?.avatar || defaultAvatar" :alt="comment.user?.username" loading="lazy" />
               </div>
               <div class="comment-content">
                 <div class="comment-header">
-                  <span class="comment-author">示例用户</span>
-                  <span class="comment-time">3 天前</span>
+                  <span class="comment-author">{{ comment.user?.username || '匿名用户' }}</span>
+                  <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
                 </div>
-                <p class="comment-text">
-                  这是一篇很棒的文章，感谢分享！内容讲解得很清晰，对我帮助很大。
-                </p>
+                <p class="comment-text">{{ comment.content }}</p>
                 <div class="comment-actions">
-                  <button class="comment-action">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-                    </svg>
-                    <span>12</span>
+                  <button
+                    v-if="userStore.user?.id === comment.user?.id || userStore.user?.isAdmin"
+                    class="comment-action comment-delete"
+                    @click="handleDeleteComment(comment.id)"
+                  >
+                    删除
                   </button>
-                  <button class="comment-action">回复</button>
                 </div>
               </div>
             </div>
+          </div>
+          <div v-else-if="!commentStore.loading" class="comments-empty">
+            还没有评论，来抢沙发吧
           </div>
         </section>
       </article>
@@ -241,6 +241,8 @@
 import { onMounted, onUnmounted, computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useArticleStore } from '../stores/article'
+import { useCommentStore } from '../stores/comment'
+import { useUserStore } from '../stores/user'
 
 interface ArticleWithStats {
   id: number
@@ -269,6 +271,8 @@ import axios from 'axios'
 
 const route = useRoute()
 const articleStore = useArticleStore()
+const commentStore = useCommentStore()
+const userStore = useUserStore()
 const userStore = useUserStore()
 
 const commentText = ref('')
@@ -398,11 +402,33 @@ const loadInteractionStatus = async () => {
 onMounted(async () => {
   const id = Number(route.params.id)
   await articleStore.getArticleById(id)
-  
+  await commentStore.getComments(id)
   window.addEventListener('scroll', updateReadingProgress, { passive: true })
-  
   await loadInteractionStatus()
 })
+
+const handleSubmitComment = async () => {
+  if (!commentText.value.trim() || !articleStore.currentArticle) return
+  try {
+    await commentStore.createComment({
+      content: commentText.value.trim(),
+      articleId: articleStore.currentArticle.id,
+      parentId: null
+    })
+    commentText.value = ''
+  } catch (error) {
+    console.error('评论失败', error)
+  }
+}
+
+const handleDeleteComment = async (id: number) => {
+  if (!confirm('确定删除这条评论？')) return
+  try {
+    await commentStore.deleteComment(id)
+  } catch (error) {
+    console.error('删除失败', error)
+  }
+}
 
 onUnmounted(() => {
   window.removeEventListener('scroll', updateReadingProgress)
@@ -895,6 +921,21 @@ onUnmounted(() => {
 
 .comment-action:hover {
   color: var(--color-primary);
+}
+
+.comment-delete {
+  color: var(--color-error, #ef4444);
+}
+
+.comment-delete:hover {
+  color: #dc2626;
+}
+
+.comments-empty {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: var(--space-8) 0;
+  font-size: var(--text-sm);
 }
 
 /* Not Found */

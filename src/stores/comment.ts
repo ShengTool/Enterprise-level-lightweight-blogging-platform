@@ -4,12 +4,13 @@ import axios from '../utils/axios'
 interface Comment {
   id: number
   content: string
-  article_id: number
-  user_id: number
-  parent_id: number | null
-  created_at: string
-  updated_at: string
-  user?: {
+  articleId: number
+  userId: number
+  parentId: number | null
+  createdAt: string
+  updatedAt: string
+  user: {
+    id: number
     username: string
     avatar: string
   }
@@ -36,11 +37,15 @@ export const useCommentStore = defineStore('comment', {
         this.loading = false
       }
     },
-    async createComment(comment: Partial<Comment>) {
+    async createComment(comment: { content: string; articleId: number; parentId: number | null }) {
       this.loading = true
       this.error = null
       try {
-        const response = await axios.post('/comments', comment)
+        const response = await axios.post('/comments', {
+          content: comment.content,
+          article: { id: comment.articleId },
+          parentId: comment.parentId
+        })
         this.comments.push(response.data)
         return response.data
       } catch (error: any) {
