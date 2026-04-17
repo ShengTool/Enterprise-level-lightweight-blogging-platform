@@ -58,11 +58,11 @@
               <div class="author-details">
                 <span class="author-name">{{ articleStore.currentArticle.user?.username || '匿名用户' }}</span>
                 <div class="article-stats">
-                  <span>{{ formatDate(articleStore.currentArticle.created_at) }}</span>
+                  <span>{{ formatDate(articleStore.currentArticle.createdAt) }}</span>
                   <span class="dot">·</span>
                   <span>预计阅读 {{ readingTime }} 分钟</span>
                   <span class="dot">·</span>
-                  <span>{{ articleStore.currentArticle.view_count }} 次阅读</span>
+                  <span>{{ articleStore.currentArticle.viewCount }} 次阅读</span>
                 </div>
               </div>
             </div>
@@ -250,10 +250,10 @@ interface ArticleWithStats {
   content: string
   summary: string
   status: 'DRAFT' | 'PUBLISHED'
-  user_id: number
-  view_count: number
-  created_at: string
-  updated_at: string
+  userId: number
+  viewCount: number
+  createdAt: string
+  updatedAt: string
   tags: { id: number; name: string; color: string; count: number; }[]
   user?: {
     id?: number
@@ -262,9 +262,8 @@ interface ArticleWithStats {
   }
   likeCount?: number
   favoriteCount?: number
-  comment_count?: number
+  commentCount?: number
 }
-import { useUserStore } from '../stores/user'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import axios from 'axios'
