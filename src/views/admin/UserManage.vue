@@ -66,12 +66,12 @@
               <td>
                 <span 
                   class="role-badge"
-                  :class="user.is_admin ? 'admin' : 'user'"
+                  :class="user.isAdmin ? 'admin' : 'user'"
                 >
-                  {{ user.is_admin ? '管理员' : '普通用户' }}
+                  {{ user.isAdmin ? '管理员' : '普通用户' }}
                 </span>
               </td>
-              <td>{{ formatDate(user.created_at) }}</td>
+              <td>{{ formatDate(user.createdAt) }}</td>
               <td class="actions-col">
                 <div class="action-buttons">
                   <button class="action-btn" @click="editUser(user)" title="编辑">
@@ -185,6 +185,17 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted } from 'vue'
+import axios from 'axios'
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+})
+// 请求带上 JWT
+api.interceptors.request.use(config => {
+  const token = sessionStorage.getItem('token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
 
 const loading = ref(false)
 const searchQuery = ref('')
@@ -202,22 +213,17 @@ const userForm = reactive({
   username: '',
   email: '',
   password: '',
-  is_admin: false
+  isAdmin: false
 })
 
-// 模拟用户数据
-const users = ref([
-  { id: 1, username: 'admin', email: 'admin@example.com', is_admin: true, avatar: '', created_at: '2024-01-01T00:00:00Z' },
-  { id: 2, username: 'user1', email: 'user1@example.com', is_admin: false, avatar: '', created_at: '2024-01-02T10:00:00Z' },
-  { id: 3, username: 'user2', email: 'user2@example.com', is_admin: false, avatar: '', created_at: '2024-01-03T15:30:00Z' },
-  { id: 4, username: 'editor', email: 'editor@example.com', is_admin: false, avatar: '', created_at: '2024-01-04T09:00:00Z' }
-])
+// 真实用户数据（从后端加载）
+const users = ref<any[]>([])
 
 const filteredUsers = computed(() => {
   let result = users.value
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    result = result.filter(u => 
+    result = result.filter(u =>
       u.username.toLowerCase().includes(query) ||
       u.email.toLowerCase().includes(query)
     )
@@ -228,6 +234,7 @@ const filteredUsers = computed(() => {
 const totalPages = computed(() => Math.ceil(filteredUsers.value.length / pageSize.value))
 
 const formatDate = (date: string) => {
+  if (!date) return '-'
   return new Date(date).toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: 'short',
@@ -235,11 +242,24 @@ const formatDate = (date: string) => {
   })
 }
 
+const loadUsers = async () => {
+  loading.value = true
+  try {
+    const res = await api.get('/api/users')
+    users.value = res.data
+  } catch (err: any) {
+    console.error('加载用户列表失败', err)
+  } finally {
+    loading.value = false
+  }
+}
+
 const editUser = (user: any) => {
   editingUser.value = user
   userForm.username = user.username
   userForm.email = user.email
-  userForm.is_admin = user.is_admin
+  userForm.isAdmin = user.isAdmin
+  userForm.password = ''
   showEditModal.value = true
 }
 
@@ -255,39 +275,48 @@ const closeModal = () => {
   userForm.username = ''
   userForm.email = ''
   userForm.password = ''
-  userForm.is_admin = false
+  userForm.isAdmin = false
 }
 
-const saveUser = () => {
-  if (editingUser.value) {
-    const index = users.value.findIndex(u => u.id === editingUser.value.id)
-    if (index > -1) {
-      users.value[index] = { ...users.value[index], ...userForm }
+const saveUser = async () => {
+  try {
+    if (editingUser.value) {
+      // 编辑
+      await api.put(`/api/users/${editingUser.value.id}`, {
+        username: userForm.username,
+        email: userForm.email,
+        isAdmin: userForm.isAdmin,
+        ...(userForm.password ? { password: userForm.password } : {})
+      })
+    } else {
+      // 新建
+      await api.post('/api/users', {
+        username: userForm.username,
+        email: userForm.email,
+        password: userForm.password,
+        isAdmin: userForm.isAdmin
+      })
     }
-  } else {
-    users.value.push({
-      id: Date.now(),
-      ...userForm,
-      avatar: '',
-      created_at: new Date().toISOString()
-    })
+    await loadUsers()
+    closeModal()
+  } catch (err: any) {
+    alert(err?.response?.data?.error || '保存失败')
   }
-  closeModal()
 }
 
-const deleteUser = () => {
-  if (userToDelete.value) {
-    users.value = users.value.filter(u => u.id !== userToDelete.value.id)
+const deleteUser = async () => {
+  try {
+    await api.delete(`/api/users/${userToDelete.value.id}`)
+    await loadUsers()
     showDeleteModal.value = false
     userToDelete.value = null
+  } catch (err: any) {
+    alert(err?.response?.data?.error || '删除失败')
   }
 }
 
 onMounted(() => {
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-  }, 500)
+  loadUsers()
 })
 </script>
 
