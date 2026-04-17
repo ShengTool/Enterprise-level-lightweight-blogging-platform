@@ -73,6 +73,23 @@ public class ArticleController {
         return ResponseEntity.ok(articles);
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<Map<String, Object>> getMyArticles(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        User user = getCurrentUser();
+        if (user == null) return ResponseEntity.status(401).body(Map.of("error", "未授权"));
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        Page<Article> articlePage = articleRepository.findByUserIdOrderByCreatedAtDesc(user.getId(), pageRequest);
+        List<Map<String, Object>> articles = articlePage.getContent().stream()
+            .map(this::toArticleMap)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(Map.of(
+            "articles", articles,
+            "total", articlePage.getTotalElements()
+        ));
+    }
+
     @PostMapping
     public ResponseEntity<?> createArticle(@RequestBody Article article) {
         User user = getCurrentUser();

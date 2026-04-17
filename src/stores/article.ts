@@ -15,14 +15,15 @@ interface Article {
   summary: string
   status: 'DRAFT' | 'PUBLISHED'
   user_id: number
-  view_count: number
-  created_at: string
-  updated_at: string
-  tags: Tag[]
   user?: {
+    id: number
     username: string
     avatar: string
   }
+  viewCount: number
+  createdAt: string
+  updatedAt: string
+  tags: Tag[]
 }
 
 export const useArticleStore = defineStore('article', {
@@ -98,9 +99,26 @@ export const useArticleStore = defineStore('article', {
       this.error = null
       try {
         const response = await axios.delete(`/articles/${id}`)
+        this.articles = this.articles.filter(a => a.id !== id)
         return response.data
       } catch (error: any) {
         this.error = error.response?.data?.message || 'Failed to delete article'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async getMyArticles() {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await axios.get('/articles/my')
+        this.articles = response.data?.articles || response.data || []
+        return this.articles
+      } catch (error: any) {
+        this.error = error.response?.data?.message || 'Failed to get my articles'
+        this.articles = []
         throw error
       } finally {
         this.loading = false
