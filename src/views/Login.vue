@@ -182,10 +182,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '../stores/user'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 const form = ref({
@@ -199,7 +200,8 @@ const rememberMe = ref(false)
 const handleLogin = async () => {
   try {
     await userStore.login(form.value.email, form.value.password)
-    router.push('/')
+    const redirect = route.query.redirect as string
+    router.push(redirect || '/')
   } catch (error) {
     console.error('登录失败:', error)
   }

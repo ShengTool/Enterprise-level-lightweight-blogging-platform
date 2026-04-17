@@ -107,8 +107,6 @@ const router = createRouter({
 
 // 路由守卫：非管理员不能访问 /admin/** 页面
 router.beforeEach(async (to) => {
-  if (!to.path.startsWith('/admin')) return true
-
   const userStore = useUserStore()
 
   // 如果还没加载过用户信息，先拉取一次
@@ -116,9 +114,21 @@ router.beforeEach(async (to) => {
     await userStore.getProfile()
   }
 
-  if (!userStore.user?.isAdmin) {
-    return '/'
+  // /write 需要登录
+  if (to.path.startsWith('/write')) {
+    if (!userStore.user) {
+      return '/login?redirect=' + encodeURIComponent(to.fullPath)
+    }
+    return true
   }
+
+  // /admin 需要管理员
+  if (to.path.startsWith('/admin')) {
+    if (!userStore.user?.isAdmin) {
+      return '/'
+    }
+  }
+
   return true
 })
 
