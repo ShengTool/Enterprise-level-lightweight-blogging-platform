@@ -41,6 +41,16 @@ const router = createRouter({
       component: () => import('../views/Profile.vue')
     },
     {
+      path: '/write',
+      name: 'write',
+      component: () => import('../views/CreateArticle.vue')
+    },
+    {
+      path: '/write/:id',
+      name: 'write-edit',
+      component: () => import('../views/CreateArticle.vue')
+    },
+    {
       path: '/user/:id',
       name: 'user',
       component: () => import('../views/UserProfile.vue')

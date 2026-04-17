@@ -39,18 +39,29 @@
         <div class="navbar-actions">
           <template v-if="userStore.user">
             <!-- Logged in user -->
+            <router-link
+              to="/write"
+              class="write-btn"
+              title="写文章"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              <span>写文章</span>
+            </router-link>
             <router-link to="/profile" class="user-menu">
-              <img 
-                :src="userStore.user.avatar || defaultAvatar" 
+              <img
+                :src="userStore.user.avatar || defaultAvatar"
                 :alt="userStore.user.username"
                 class="user-avatar"
               />
               <span class="user-name">{{ userStore.user.username }}</span>
             </router-link>
-            <router-link 
-              v-if="userStore.user.isAdmin" 
-              to="/admin" 
-              class="action-btn" 
+            <router-link
+              v-if="userStore.user.isAdmin"
+              to="/admin"
+              class="action-btn"
               title="管理后台"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -202,6 +213,25 @@ const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy5
 .action-btn:hover {
   background: var(--color-bg-hover);
   color: var(--color-primary);
+}
+
+.write-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: white;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.write-btn:hover {
+  background: #0052d4;
+  color: white;
 }
 
 /* Responsive */
