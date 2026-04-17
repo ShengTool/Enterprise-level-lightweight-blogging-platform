@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -31,7 +32,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/api/auth/**", "/api/public/**")
+                .ignoringRequestMatchers("/api/auth/**", "/api/public/**", "/api/articles/**", "/api/tags/**", "/api/comments/**")
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             )
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -41,9 +42,17 @@ public class SecurityConfig {
                 // 公开访问的API
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/api/articles/**").permitAll()
+                .requestMatchers("/api/articles", "/api/articles/").permitAll()  // GET 列表
+                .requestMatchers("/api/articles/popular").permitAll()  // GET 热门
+                .requestMatchers("/api/articles/{id}").permitAll()  // GET 详情
                 .requestMatchers("/api/tags/**").permitAll()
                 .requestMatchers("/api/comments/**").permitAll()
+                
+                // 文章写操作需要认证
+                .requestMatchers(HttpMethod.POST, "/api/articles/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/articles/**").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/articles/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/articles/**").authenticated()
                 
                 // 需要认证的API
                 .requestMatchers("/api/users/**").authenticated()
