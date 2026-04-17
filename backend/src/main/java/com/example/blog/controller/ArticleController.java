@@ -54,15 +54,12 @@ public class ArticleController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getArticle(@PathVariable Integer id) {
-        Optional<Article> articleOpt = articleRepository.findById(id);
+        Optional<Article> articleOpt = articleRepository.findByIdForDetail(id);
         if (!articleOpt.isPresent()) {
             return ResponseEntity.notFound().build();
         }
         Article article = articleOpt.get();
-        // 使用原子操作增加浏览量，避免并发问题
         articleRepository.incrementViewCount(id);
-        // 重新加载文章以获取更新后的计数
-        article = articleRepository.findById(id).orElse(article);
         return ResponseEntity.ok(toArticleMap(article));
     }
 

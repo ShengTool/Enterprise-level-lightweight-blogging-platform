@@ -37,6 +37,10 @@ public interface ArticleRepository extends JpaRepository<Article, Integer> {
     @Transactional(readOnly = true)
     @Query("SELECT DISTINCT a FROM Article a LEFT JOIN FETCH a.tags LEFT JOIN FETCH a.user WHERE a.status = 'PUBLISHED' ORDER BY a.viewCount DESC")
     Page<Article> findPopularArticles(Pageable pageable);
+
+    @Transactional(readOnly = true)
+    @Query("SELECT a FROM Article a LEFT JOIN FETCH a.tags LEFT JOIN FETCH a.user WHERE a.id = :id")
+    Optional<Article> findByIdForDetail(@Param("id") Integer id);
     
     @Transactional
     @Modifying
