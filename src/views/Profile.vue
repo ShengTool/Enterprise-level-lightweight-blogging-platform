@@ -242,6 +242,37 @@
       </div>
     </div>
     
+    <!-- 修改头像弹窗 -->
+    <Teleport to="body">
+      <div v-if="showAvatarModal" class="modal-overlay" @click.self="showAvatarModal = false">
+        <div class="modal">
+          <div class="modal-header">
+            <h3>修改头像</h3>
+            <button class="modal-close" @click="showAvatarModal = false">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div style="text-align: center; margin-bottom: 16px;">
+              <img :src="avatarUrl || defaultAvatar" style="width: 96px; height: 96px; border-radius: 50%; object-fit: cover;" />
+            </div>
+            <div class="form-group">
+              <label>头像链接</label>
+              <input v-model="avatarUrl" type="text" class="form-input" placeholder="请输入头像图片 URL" />
+              <span class="form-hint">支持任意图片链接，建议正方形图片</span>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="showAvatarModal = false">取消</button>
+            <button class="btn btn-primary" @click="saveAvatar">保存</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
     <!-- 编辑资料弹窗 -->
     <Teleport to="body">
       <div v-if="showEditModal" class="modal-overlay" @click.self="showEditModal = false">
@@ -351,6 +382,7 @@ const showEditModal = ref(false)
 const showPasswordModal = ref(false)
 const showDeleteModal = ref(false)
 const showAvatarModal = ref(false)
+const avatarUrl = ref('')
 const articleToDelete = ref<any>(null)
 
 const tabs = [
@@ -388,6 +420,15 @@ const formatDate = (date: string) => {
 const handleLogout = () => {
   userStore.logout()
   router.push('/')
+}
+
+const saveAvatar = async () => {
+  try {
+    await userStore.updateProfile({ username: userStore.user?.username || '', avatar: avatarUrl.value })
+    showAvatarModal.value = false
+  } catch (e: any) {
+    alert(userStore.error || '保存头像失败')
+  }
 }
 
 const saveProfile = async () => {
@@ -435,6 +476,7 @@ onMounted(async () => {
     await articleStore.getMyArticles()
     editForm.username = userStore.user?.username || ''
     editForm.email = userStore.user?.email || ''
+    avatarUrl.value = userStore.user?.avatar || ''
   }
 })
 </script>
