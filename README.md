@@ -1,6 +1,6 @@
 # LiteBlog
 
-一个简洁优雅的个人博客系统，基于 Vue 3 + Spring Boot 构建。
+用Trae CN的全新Solo模式Vibe Coding出来的一个简洁优雅的个人博客系统，基于 Vue 3 + Spring Boot 构建。
 
 ## ✨ 功能特性
 
@@ -37,8 +37,9 @@
 | Redis | 缓存 & 限流 |
 
 ## 📸 项目截图
+> <img width="1854" height="965" alt="image" src="https://github.com/user-attachments/assets/9b56d24c-3ace-48eb-b0fd-e2ad84056b4a" />
+  <img width="1861" height="981" alt="image" src="https://github.com/user-attachments/assets/2bc4f7bb-2421-4456-b8d0-0369489f8d6c" />
 
-> 可在此处添加项目截图
 
 ## 🚀 快速开始
 
