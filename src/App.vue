@@ -61,11 +61,13 @@ import { useRoute } from 'vue-router'
 import Toast from './components/Toast.vue'
 import Navbar from './components/Navbar.vue'
 import { useUserStore } from './stores/user'
+import { useSettingsStore } from './stores/settings'
 
 const route = useRoute()
 const isDark = ref(false)
 const showBackToTop = ref(false)
 const userStore = useUserStore()
+const settingsStore = useSettingsStore()
 
 onMounted(async () => {
   // 初始化主题
@@ -82,6 +84,9 @@ onMounted(async () => {
   if (userStore.token) {
     await userStore.getProfile()
   }
+  
+  // 加载网站设置
+  await settingsStore.loadSettings()
   
   // 监听滚动
   window.addEventListener('scroll', handleScroll, { passive: true })

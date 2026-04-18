@@ -16,6 +16,10 @@ public class CommentService {
         return commentRepository.findByArticleId(articleId);
     }
 
+    public List<Comment> getAll() {
+        return commentRepository.findAllByOrderByCreatedAtDesc();
+    }
+
     public Comment create(Comment comment) {
         return commentRepository.save(comment);
     }

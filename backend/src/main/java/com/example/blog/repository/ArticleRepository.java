@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +19,9 @@ public interface ArticleRepository extends JpaRepository<Article, Integer> {
     List<Article> findByStatusAndTagsName(String status, String tagName);
     List<Article> findByStatusAndTitleContainingOrContentContaining(String status, String search1, String search2);
     List<Article> findByStatusAndTagsNameAndTitleContainingOrContentContaining(String status, String tagName, String search1, String search2);
+
+    long countByCreatedAtAfter(LocalDateTime date);
+    List<Article> findTop5ByOrderByCreatedAtDesc();
 
     @Transactional(readOnly = true)
     @Query("SELECT DISTINCT a FROM Article a LEFT JOIN FETCH a.tags LEFT JOIN FETCH a.user WHERE a.status = :status ORDER BY a.createdAt DESC")

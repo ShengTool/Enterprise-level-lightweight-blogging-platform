@@ -14,7 +14,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/backup")
@@ -84,6 +86,16 @@ public class BackupController {
             return new ResponseEntity<>(bytes, headers, HttpStatus.OK);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("下载失败：" + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/clear-cache")
+    public ResponseEntity<?> clearCache() {
+        try {
+            int cleared = backupService.clearCache();
+            return ResponseEntity.ok(Map.of("message", "缓存已清除", "count", cleared));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("清除缓存失败：" + e.getMessage());
         }
     }
 }

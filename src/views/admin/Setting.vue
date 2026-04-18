@@ -1,5 +1,10 @@
 <template>
   <div class="page-container">
+    <div v-if="settingsLoading" class="loading-overlay">
+      <div class="loading-spinner"></div>
+      <p>加载中...</p>
+    </div>
+    
     <div class="page-header">
       <div class="header-content">
         <h2 class="page-title">系统设置</h2>
@@ -127,13 +132,23 @@
           <div class="panel-card">
             <h3 class="panel-title">数据备份</h3>
             <p class="panel-description">备份系统数据到本地文件</p>
-            <button class="btn btn-secondary" @click="handleBackup">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button class="btn btn-secondary" @click="handleBackup" :disabled="backupLoading">
+              <svg v-if="!backupLoading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7 10 12 15 17 10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              立即备份
+              <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
+                <line x1="12" y1="2" x2="12" y2="6"/>
+                <line x1="12" y1="18" x2="12" y2="22"/>
+                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
+                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+                <line x1="2" y1="12" x2="6" y2="12"/>
+                <line x1="18" y1="12" x2="22" y2="12"/>
+                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
+                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+              </svg>
+              {{ backupLoading ? '备份中...' : '立即备份' }}
             </button>
           </div>
           
@@ -169,9 +184,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, h } from 'vue'
+import { ref, reactive, h, onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
+import axios from '@/utils/axios'
 
+const userStore = useUserStore()
 const activeSection = ref('site')
+const backupLoading = ref(false)
+const settingsLoading = ref(false)
+
+onMounted(async () => {
+  await loadSettings()
+})
+
+const loadSettings = async () => {
+  settingsLoading.value = true
+  try {
+    // 管理员用完整设置接口，普通访客用公开接口
+    const endpoint = userStore.user?.isAdmin ? '/admin/settings' : '/settings'
+    const res = await axios.get(endpoint)
+    Object.assign(settings, res.data)
+  } catch (e) {
+    console.error('加载设置失败', e)
+  } finally {
+    settingsLoading.value = false
+  }
+}
 
 // 图标组件
 const Globe = () => h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [
@@ -211,18 +249,62 @@ const settings = reactive({
   emailVerification: false
 })
 
-const saveSettings = () => {
-  // 保存设置逻辑
-  alert('设置已保存')
+const saveSettings = async () => {
+  try {
+    const res = await axios.put('/admin/settings', settings)
+    Object.assign(settings, res.data)
+    alert('设置已保存')
+  } catch (e) {
+    console.error('保存设置失败', e)
+    alert('保存失败')
+  }
 }
 
-const handleBackup = () => {
-  alert('数据备份成功')
+const handleBackup = async () => {
+  if (backupLoading.value) return
+  backupLoading.value = true
+  try {
+    const res = await fetch('/api/admin/backup/create', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${userStore.token}` }
+    })
+    if (res.ok) {
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `liteblog-backup-${new Date().toISOString().slice(0,10)}.json`
+      a.click()
+      window.URL.revokeObjectURL(url)
+      alert('备份成功')
+    } else {
+      alert('备份失败')
+    }
+  } catch (e) {
+    console.error('Backup failed', e)
+    alert('备份失败')
+  } finally {
+    backupLoading.value = false
+  }
 }
 
-const confirmClearCache = () => {
+const confirmClearCache = async () => {
   if (confirm('确定要清除缓存吗？')) {
-    alert('缓存已清除')
+    try {
+      const res = await fetch('/api/admin/backup/clear-cache', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${userStore.token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        alert(`缓存已清除，共删除 ${data.count || 0} 个文件`)
+      } else {
+        alert('清除缓存失败')
+      }
+    } catch (e) {
+      console.error('清除缓存失败', e)
+      alert('清除缓存失败')
+    }
   }
 }
 </script>
@@ -230,6 +312,36 @@ const confirmClearCache = () => {
 <style scoped>
 .page-container {
   max-width: 1000px;
+  position: relative;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: var(--radius-xl);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-border-primary);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-overlay p {
+  margin-top: var(--space-3);
+  color: var(--color-text-secondary);
 }
 
 .page-header {
@@ -444,5 +556,13 @@ const confirmClearCache = () => {
   border-top: 1px solid var(--color-border-primary);
   display: flex;
   justify-content: flex-end;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
 }
 </style>

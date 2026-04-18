@@ -112,4 +112,44 @@ public class BackupService {
             statement.execute("SET FOREIGN_KEY_CHECKS = 1");
         }
     }
+    
+    public int clearCache() throws IOException {
+        int count = 0;
+        
+        // 清理上传目录的临时文件
+        File uploadDir = new File("uploads");
+        if (uploadDir.exists() && uploadDir.isDirectory()) {
+            File[] files = uploadDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    // 删除7天前的临时文件
+                    long sevenDaysAgo = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000);
+                    if (file.lastModified() < sevenDaysAgo) {
+                        if (file.delete()) {
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 清理备份目录的临时文件
+        File backupDir = new File("backup");
+        if (backupDir.exists() && backupDir.isDirectory()) {
+            File[] files = backupDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    // 删除30天前的备份文件
+                    long thirtyDaysAgo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000);
+                    if (file.lastModified() < thirtyDaysAgo) {
+                        if (file.delete()) {
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return count;
+    }
 }

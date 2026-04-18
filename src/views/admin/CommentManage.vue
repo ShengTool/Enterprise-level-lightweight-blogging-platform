@@ -70,12 +70,13 @@
           <div class="comment-content">
             <div class="comment-header">
               <span class="comment-author">{{ comment.user?.username || '匿名用户' }}</span>
-              <span class="comment-time">{{ formatDate(comment.created_at) }}</span>
-              <router-link 
-                :to="`/article/${comment.article_id}`" 
+              <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
+              <router-link
+                v-if="comment.article"
+                :to="`/article/${comment.article.id}`"
                 class="comment-article"
               >
-                查看文章
+                {{ comment.article.title }}
               </router-link>
             </div>
             <p class="comment-text">{{ comment.content }}</p>
@@ -127,7 +128,9 @@
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" @click="showDeleteModal = false">取消</button>
-            <button class="btn btn-primary danger" @click="executeDelete">删除</button>
+            <button class="btn btn-primary danger" :disabled="deleteLoading" @click="executeDelete">
+              {{ deleteLoading ? '删除中...' : '删除' }}
+            </button>
           </div>
         </div>
       </div>
@@ -137,6 +140,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import axios from '../../utils/axios'
 
 const loading = ref(false)
 const searchQuery = ref('')
@@ -144,44 +148,36 @@ const selectedComments = ref<number[]>([])
 const showDeleteModal = ref(false)
 const commentToDelete = ref<any>(null)
 const isBatchDelete = ref(false)
+const deleteLoading = ref(false)
 
 const defaultAvatar = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iMjAiIGZpbGw9IiNFOEU4RTgiLz48Y2lyY2xlIGN4PSIyMCIgY3k9IjE2IiByPSI4IiBmaWxsPSIjQThBOEE4Ii8+PHBhdGggZD0iTTYgMzVjMC04LjI4NCA2LjcxNi0xNSAxNS0xNXMxNSA2LjcxNiAxNSAxNSIgZmlsbD0iI0E4QThBOCIvPjwvc3ZnPg=='
 
-// 模拟评论数据
-const comments = ref([
-  {
-    id: 1,
-    content: '这篇文章写得真好，学到了很多！',
-    article_id: 1,
-    user: { username: '用户A', avatar: '' },
-    created_at: '2024-01-15T10:00:00Z'
-  },
-  {
-    id: 2,
-    content: '感谢分享，对我帮助很大。',
-    article_id: 2,
-    user: { username: '用户B', avatar: '' },
-    created_at: '2024-01-14T15:30:00Z'
-  },
-  {
-    id: 3,
-    content: '期待更多这样的内容！',
-    article_id: 1,
-    user: { username: '用户C', avatar: '' },
-    created_at: '2024-01-13T09:00:00Z'
+const comments = ref<any[]>([])
+
+const loadComments = async () => {
+  loading.value = true
+  try {
+    const res = await axios.get('/comments')
+    comments.value = res.data
+  } catch (err: any) {
+    console.error('加载评论失败', err)
+  } finally {
+    loading.value = false
   }
-])
+}
 
 const filteredComments = computed(() => {
   if (!searchQuery.value) return comments.value
   const query = searchQuery.value.toLowerCase()
-  return comments.value.filter(c => 
+  return comments.value.filter(c =>
     c.content.toLowerCase().includes(query) ||
-    c.user?.username.toLowerCase().includes(query)
+    c.user?.username.toLowerCase().includes(query) ||
+    c.article?.title.toLowerCase().includes(query)
   )
 })
 
 const formatDate = (date: string) => {
+  if (!date) return ''
   return new Date(date).toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: 'short',
@@ -216,22 +212,30 @@ const confirmBatchDelete = () => {
   showDeleteModal.value = true
 }
 
-const executeDelete = () => {
-  if (isBatchDelete.value) {
-    comments.value = comments.value.filter(c => !selectedComments.value.includes(c.id))
-    selectedComments.value = []
-  } else if (commentToDelete.value) {
-    comments.value = comments.value.filter(c => c.id !== commentToDelete.value.id)
+const executeDelete = async () => {
+  deleteLoading.value = true
+  try {
+    if (isBatchDelete.value) {
+      for (const id of selectedComments.value) {
+        await axios.delete(`/comments/${id}`)
+      }
+      selectedComments.value = []
+    } else if (commentToDelete.value) {
+      await axios.delete(`/comments/${commentToDelete.value.id}`)
+    }
+    showDeleteModal.value = false
+    commentToDelete.value = null
+    await loadComments()
+  } catch (err: any) {
+    console.error('删除评论失败', err)
+    alert('删除失败，请重试')
+  } finally {
+    deleteLoading.value = false
   }
-  showDeleteModal.value = false
-  commentToDelete.value = null
 }
 
 onMounted(() => {
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-  }, 500)
+  loadComments()
 })
 </script>
 

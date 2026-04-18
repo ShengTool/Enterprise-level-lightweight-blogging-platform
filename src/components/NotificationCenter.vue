@@ -82,7 +82,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useUserStore } from '@/stores/user'
 import axios from '../utils/axios'
+
+const userStore = useUserStore()
 
 const isOpen = ref(false)
 const loading = ref(false)
@@ -101,7 +104,7 @@ const togglePanel = () => {
 const loadNotifications = async () => {
   loading.value = true
   try {
-    const token = localStorage.getItem('token')
+    const token = userStore.token
     if (!token) return
     
     const response = await axios.get('/api/notifications', {
@@ -122,7 +125,7 @@ const loadNotifications = async () => {
 const loadMore = async () => {
   page.value++
   try {
-    const token = localStorage.getItem('token')
+    const token = userStore.token
     if (!token) return
     
     const response = await axios.get('/api/notifications', {
@@ -139,7 +142,7 @@ const loadMore = async () => {
 
 const markAllAsRead = async () => {
   try {
-    const token = localStorage.getItem('token')
+    const token = userStore.token
     if (!token) return
     
     await axios.post('/api/notifications/read-all', {}, {
@@ -156,7 +159,7 @@ const markAllAsRead = async () => {
 const handleNotificationClick = async (notification: any) => {
   if (!notification.isRead) {
     try {
-      const token = localStorage.getItem('token')
+      const token = userStore.token
       if (token) {
         await axios.post(`/api/notifications/${notification.id}/read`, {}, {
           headers: { Authorization: `Bearer ${token}` }
@@ -197,8 +200,7 @@ const handleClickOutside = (event: MouseEvent) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
-  // 加载未读数
-  const token = localStorage.getItem('token')
+  // 加载未读�?  const token = userStore.token
   if (token) {
     axios.get('/api/notifications/unread-count', {
       headers: { Authorization: `Bearer ${token}` }
