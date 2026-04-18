@@ -244,6 +244,7 @@
     
     <!-- 修改头像弹窗 -->
     <Teleport to="body">
+      <Transition name="modal">
       <div v-if="showAvatarModal" class="modal-overlay" @click.self="showAvatarModal = false">
         <div class="modal">
           <div class="modal-header">
@@ -271,10 +272,12 @@
           </div>
         </div>
       </div>
+      </Transition>
     </Teleport>
 
     <!-- 编辑资料弹窗 -->
     <Teleport to="body">
+      <Transition name="modal">
       <div v-if="showEditModal" class="modal-overlay" @click.self="showEditModal = false">
         <div class="modal">
           <div class="modal-header">
@@ -303,10 +306,12 @@
           </div>
         </div>
       </div>
+      </Transition>
     </Teleport>
     
     <!-- 修改密码弹窗 -->
     <Teleport to="body">
+      <Transition name="modal">
       <div v-if="showPasswordModal" class="modal-overlay" @click.self="showPasswordModal = false">
         <div class="modal">
           <div class="modal-header">
@@ -338,10 +343,12 @@
           </div>
         </div>
       </div>
+      </Transition>
     </Teleport>
     
     <!-- 删除确认弹窗 -->
     <Teleport to="body">
+      <Transition name="modal">
       <div v-if="showDeleteModal" class="modal-overlay" @click.self="showDeleteModal = false">
         <div class="modal modal-sm">
           <div class="modal-body text-center">
@@ -361,6 +368,7 @@
           </div>
         </div>
       </div>
+      </Transition>
     </Teleport>
   </div>
 </template>
@@ -911,6 +919,25 @@ onMounted(async () => {
   font-size: var(--text-base);
   color: var(--color-text-tertiary);
   margin-bottom: var(--space-4);
+}
+
+/* Modal Transition */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.25s ease;
+}
+.modal-enter-active .modal,
+.modal-leave-active .modal {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+.modal-enter-from .modal,
+.modal-leave-to .modal {
+  transform: translateY(16px) scale(0.97);
+  opacity: 0;
 }
 
 /* Modal */
