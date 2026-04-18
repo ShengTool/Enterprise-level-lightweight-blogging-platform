@@ -390,14 +390,30 @@ const handleLogout = () => {
   router.push('/')
 }
 
-const saveProfile = () => {
-  // 实现保存逻辑
-  showEditModal.value = false
+const saveProfile = async () => {
+  try {
+    await userStore.updateProfile({ username: editForm.username })
+    showEditModal.value = false
+  } catch (e: any) {
+    alert(userStore.error || '保存失败')
+  }
 }
 
-const savePassword = () => {
-  // 实现修改密码逻辑
-  showPasswordModal.value = false
+const savePassword = async () => {
+  if (passwordForm.new !== passwordForm.confirm) {
+    alert('两次密码不一致')
+    return
+  }
+  try {
+    await userStore.changePassword(passwordForm.current, passwordForm.new)
+    showPasswordModal.value = false
+    passwordForm.current = ''
+    passwordForm.new = ''
+    passwordForm.confirm = ''
+    alert('密码修改成功')
+  } catch (e: any) {
+    alert(userStore.error || '修改密码失败')
+  }
 }
 
 const confirmDelete = (article: any) => {

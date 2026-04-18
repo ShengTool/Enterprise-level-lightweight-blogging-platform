@@ -66,6 +66,32 @@ export const useUserStore = defineStore('user', {
         this.loading = false
       }
     },
+    async updateProfile(data: { username: string; avatar?: string; bio?: string }) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await axios.put(`/users/${this.user?.id}`, data)
+        this.user = { ...this.user, ...response.data }
+        return response.data
+      } catch (error: any) {
+        this.error = error.response?.data?.error || '保存失败'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+    async changePassword(oldPassword: string, newPassword: string) {
+      this.loading = true
+      this.error = null
+      try {
+        await axios.post('/auth/change-password', { oldPassword, newPassword })
+      } catch (error: any) {
+        this.error = error.response?.data?.error || '修改密码失败'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
     logout() {
       this.user = null
       this.token = null
